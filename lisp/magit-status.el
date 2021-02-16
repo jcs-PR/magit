@@ -200,6 +200,17 @@ Valid values are:
           (const :tag "use args from buffer if it is current" current)
           (const :tag "never use args from buffer" never)))
 
+;;; Cache
+
+(defvar magit--cache-branch-name nil
+  "Cache for current branch name.")
+
+(defvar magit--cache-branch-hash nil
+  "Cache for current branch hash.")
+
+(defvar magit--cache-upstream nil
+  "Cache for current upstream..")
+
 ;;; Commands
 
 ;;;###autoload
@@ -269,7 +280,11 @@ prefix arguments:
                 (magit-read-repository
                  (>= (prefix-numeric-value current-prefix-arg) 16)))
            magit--refresh-cache)))
-  (let ((magit--refresh-cache (or cache (list (cons 0 0)))))
+  (let* ((magit--refresh-cache (or cache (list (cons 0 0))))
+         (magit--cache-branch-name (magit-get-current-branch))
+         (magit--cache-branch-hash (magit-rev-verify "HEAD"))
+         (magit--cache-upstream (magit-get-upstream-branch magit--cache-branch-name))
+         )
     (if directory
         (let ((toplevel (magit-toplevel directory)))
           (setq directory (file-name-as-directory
@@ -509,17 +524,13 @@ If there is no blob buffer in the same frame, then do nothing."
 ;;; Sections
 ;;;; Special Headers
 
-(defvar magit--current-branch nil
-  "Record the current branch hash.")
-
 (defun magit-insert-status-headers ()
   "Insert header sections appropriate for `magit-status-mode' buffers.
 The sections are inserted by running the functions on the hook
 `magit-status-headers-hook'."
-  (let ((magit--current-branch (magit-rev-verify "HEAD")))
-    (if magit--current-branch
-        (magit-insert-headers 'magit-status-headers-hook)
-      (insert "In the beginning there was darkness\n\n"))))
+  (if magit--cache-branch-hash
+      (magit-insert-headers 'magit-status-headers-hook)
+    (insert "In the beginning there was darkness\n\n")))
 
 (defvar magit-error-section-map
   (let ((map (make-sparse-keymap)))
@@ -566,8 +577,8 @@ the status buffer causes this section to disappear again."
   "Insert a header line about the current branch.
 If `HEAD' is detached, then insert information about that commit
 instead.  The optional BRANCH argument is for internal use only."
-  (let ((branch (or branch (magit-get-current-branch)))
-        (output (magit-rev-format "%h %s" (or branch "HEAD"))))
+  (let* ((branch (or branch magit--cache-branch-name (magit-get-current-branch)))
+         (output (magit-rev-format "%h %s" (or branch "HEAD"))))
     (string-match "^\\([^ ]+\\) \\(.*\\)" output)
     (magit-bind-match-strings (commit summary) output
       (when (equal summary "")
@@ -592,13 +603,13 @@ instead.  The optional BRANCH argument is for internal use only."
   "Insert a header line about the upstream of the current branch.
 If no branch is checked out, then insert nothing.  The optional
 arguments are for internal use only."
-  (when-let ((branch (or branch (magit-get-current-branch))))
+  (when-let ((branch (or branch magit--cache-branch-name (magit-get-current-branch))))
     (let ((remote (magit-get "branch" branch "remote"))
           (merge  (magit-get "branch" branch "merge"))
           (rebase (magit-get "branch" branch "rebase")))
       (when (or remote merge)
         (unless upstream
-          (setq upstream (magit-get-upstream-branch branch)))
+          (setq upstream (or magit--cache-upstream (magit-get-upstream-branch branch))))
         (magit-insert-section (branch upstream)
           (pcase rebase
             ("true")
@@ -639,12 +650,12 @@ arguments are for internal use only."
 
 (defun magit-insert-push-branch-header ()
   "Insert a header line about the branch the current branch is pushed to."
-  (when-let ((branch (magit-get-current-branch))
+  (when-let ((branch (or magit--cache-branch-name (magit-get-current-branch)))
              (target (magit-get-push-branch branch)))
     (magit-insert-section (branch target)
       (insert (format "%-10s" "Push: "))
       (insert
-       (if (or magit--current-branch (magit-rev-verify target))
+       (if (or magit--cache-branch-hash (magit-rev-verify target))
            (concat target " "
                    (and magit-status-show-hashes-in-headers
                         (concat (propertize (magit-rev-format "%h" target)

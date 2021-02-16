@@ -1730,7 +1730,7 @@ behind of the current branch, then show the commits that have
 not yet been pushed into the upstream branch.  If no upstream is
 configured or if the upstream is not behind of the current branch,
 then show the last `magit-log-section-commit-count' commits."
-  (let ((upstream (magit-get-upstream-branch)))
+  (let ((upstream (or magit--cache-upstream (magit-get-upstream-branch))))
     (if (or (not upstream)
             (magit-rev-ancestor-p "HEAD" upstream))
         (magit-insert-recent-commits 'unpushed "@{upstream}..")
