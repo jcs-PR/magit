@@ -509,13 +509,17 @@ If there is no blob buffer in the same frame, then do nothing."
 ;;; Sections
 ;;;; Special Headers
 
+(defvar magit--current-branch nil
+  "Record the current branch hash.")
+
 (defun magit-insert-status-headers ()
   "Insert header sections appropriate for `magit-status-mode' buffers.
 The sections are inserted by running the functions on the hook
 `magit-status-headers-hook'."
-  (if (magit-rev-verify "HEAD")
-      (magit-insert-headers 'magit-status-headers-hook)
-    (insert "In the beginning there was darkness\n\n")))
+  (let ((magit--current-branch (magit-rev-verify "HEAD")))
+    (if magit--current-branch
+        (magit-insert-headers 'magit-status-headers-hook)
+      (insert "In the beginning there was darkness\n\n"))))
 
 (defvar magit-error-section-map
   (let ((map (make-sparse-keymap)))
@@ -640,7 +644,7 @@ arguments are for internal use only."
     (magit-insert-section (branch target)
       (insert (format "%-10s" "Push: "))
       (insert
-       (if (magit-rev-verify target)
+       (if (or magit--current-branch (magit-rev-verify target))
            (concat target " "
                    (and magit-status-show-hashes-in-headers
                         (concat (propertize (magit-rev-format "%h" target)
