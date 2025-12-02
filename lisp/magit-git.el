@@ -132,7 +132,7 @@ successfully.")
                  core-exe))))
       (and (eq system-type 'darwin)
            (executable-find "git"))
-      "git")
+      (executable-find "git"))
   "The Git executable used by Magit on the local host.
 On remote machines `magit-remote-git-executable' is used instead."
   :package-version '(magit . "3.2.0")
