@@ -34,4 +34,4 @@ jobs:
     - name: Run tests
       run: |
         eask package
-        eask install
+        eask install --verbose 5
