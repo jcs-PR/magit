@@ -23,3 +23,6 @@
 *~
 /*.tar
 /*.tar.gz
+
+/.eask
+/dist
