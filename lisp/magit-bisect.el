@@ -26,7 +26,7 @@
 
 ;;; Code:
 
-(require 'magit)
+;;(require 'magit)
 
 ;;; Options
 
