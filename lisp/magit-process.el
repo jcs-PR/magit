@@ -30,9 +30,9 @@
 
 ;;; Code:
 
-(require 'magit-base)
-(require 'magit-git)
-(require 'magit-mode)
+;;(require 'magit-base)
+;;(require 'magit-git)
+;;(require 'magit-mode)
 
 (require 'ansi-color)
 (require 'auth-source)
