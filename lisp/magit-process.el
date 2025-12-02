@@ -32,7 +32,7 @@
 
 ;;(require 'magit-base)
 ;;(require 'magit-git)
-;;(require 'magit-mode)
+(require 'magit-mode)
 
 (require 'ansi-color)
 (require 'auth-source)
