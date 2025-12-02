@@ -34,9 +34,9 @@
 ;;(require 'magit-git)
 ;;(require 'magit-mode)
 
-(require 'ansi-color)
-(require 'auth-source)
-(require 'with-editor)
+;;(require 'ansi-color)
+;;(require 'auth-source)
+;;(require 'with-editor)
 
 (defvar messages-buffer-name)
 (defvar y-or-n-p-map)
