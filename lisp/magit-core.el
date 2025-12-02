@@ -29,13 +29,13 @@
 
 ;;; Code:
 
-(require 'magit-base)
-(require 'magit-git)
-(require 'magit-mode)
-(require 'magit-margin)
-(require 'magit-process)
-(require 'magit-transient)
-(require 'magit-autorevert)
+;;(require 'magit-base)
+;;(require 'magit-git)
+;;(require 'magit-mode)
+;;(require 'magit-margin)
+;;(require 'magit-process)
+;;(require 'magit-transient)
+;;(require 'magit-autorevert)
 
 ;;; Options
 
