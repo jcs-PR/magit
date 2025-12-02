@@ -27,7 +27,7 @@
 
 ;;; Code:
 
-;;(require 'magit-git)
+(require 'magit-git)
 ;;(require 'magit-mode)
 ;;(require 'magit-process)
 
