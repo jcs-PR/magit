@@ -29,9 +29,9 @@
 
 ;;; Code:
 
-(require 'magit-base)
-(require 'magit-transient)
-(require 'magit-mode)
+;;(require 'magit-base)
+;;(require 'magit-transient)
+;;(require 'magit-mode)
 
 ;;; Options
 
