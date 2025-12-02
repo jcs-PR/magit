@@ -58,7 +58,29 @@ If t, use ptys: this enables Magit to prompt for passphrases when needed."
   :type '(choice (const :tag "Pipe" nil)
                  (const :tag "Pty" t)))
 
+(defcustom magit-need-cygwin-noglob
+  (and (eq system-type 'windows-nt)
+       (with-temp-buffer
+         (let ((process-environment
+                (append magit-git-environment process-environment)))
+           (condition-case e
+               (ignore-errors (process-file magit-git-executable
+                                            nil (current-buffer) nil
+                                            "-c" "alias.echo=!echo" "echo" "x{0}"))
+             (file-error
+              (lwarn 'magit-process :warning
+                     "Could not run Git: %S" e))))
+         (equal "x0\n" (buffer-string))))
+  "Whether to use a workaround for Cygwin's globbing behavior.
 
+If non-nil, add environment variables to `process-environment' to
+prevent the git.exe distributed by Cygwin and MSYS2 from
+attempting to perform glob expansion when called from a native
+Windows build of Emacs.  See #2246."
+  :package-version '(magit . "2.3.0")
+  :group 'magit-process
+  :type '(choice (const :tag "Yes" t)
+                 (const :tag "No" nil)))
 
 (defcustom magit-process-popup-time -1
   "Popup the process buffer if a command takes longer than this many seconds."
@@ -89,7 +111,42 @@ displays the text of `magit-process-error-summary' instead."
   :type '(choice (const :tag "Use summary line" nil)
                  integer))
 
+(defcustom magit-credential-cache-daemon-socket
+  (seq-some (lambda (line)
+              (pcase-let ((`(,prog . ,args) (split-string line)))
+                (and prog
+                     (string-match-p
+                      "\\`\\(?:\\(?:/.*/\\)?git-credential-\\)?cache\\'" prog)
+                     (or (cadr (member "--socket" args))
+                         (expand-file-name "~/.git-credential-cache/socket")))))
+            ;; Note: `magit-process-file' is not yet defined when
+            ;; evaluating this form, so we use `process-lines'.
+            (ignore-errors
+              (let ((process-environment
+                     (append magit-git-environment process-environment)))
+                (process-lines magit-git-executable
+                               "config" "--get-all" "credential.helper"))))
+  "If non-nil, start a credential cache daemon using this socket.
 
+When using Git's cache credential helper in the normal way, Emacs
+sends a SIGHUP to the credential daemon after the git subprocess
+has exited, causing the daemon to also quit.  This can be avoided
+by starting the `git-credential-cache--daemon' process directly
+from Emacs.
+
+The function `magit-maybe-start-credential-cache-daemon' takes
+care of starting the daemon if necessary, using the value of this
+option as the socket.  If this option is nil, then it does not
+start any daemon.  Likewise if another daemon is already running,
+then it starts no new daemon.  This function has to be a member
+of the hook variable `magit-credential-hook' for this to work.
+If an error occurs while starting the daemon, most likely because
+the necessary executable is missing, then the function removes
+itself from the hook, to avoid further futile attempts."
+  :package-version '(magit . "2.3.0")
+  :group 'magit-process
+  :type '(choice (file  :tag "Socket")
+                 (const :tag "Don't start a cache daemon" nil)))
 
 (defcustom magit-process-yes-or-no-prompt-regexp
   (eval-when-compile
@@ -328,8 +385,8 @@ optional NODISPLAY is non-nil also display it."
             (setq prev topdir)
             (setq topdir (file-name-directory (directory-file-name topdir)))))))
     (let ((buffer (or (seq-find (##with-current-buffer %
-                                  (and (eq major-mode 'magit-process-mode)
-                                       (equal default-directory topdir)))
+                                                       (and (eq major-mode 'magit-process-mode)
+                                                            (equal default-directory topdir)))
                                 (buffer-list))
                       (magit-generate-new-buffer 'magit-process-mode
                                                  nil topdir))))
