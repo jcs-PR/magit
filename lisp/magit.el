@@ -61,13 +61,13 @@
 
 ;;; Code:
 
-;;(require 'magit-core)
-;;(require 'magit-diff)
-;;(require 'magit-log)
-;;(require 'magit-wip)
-;;(require 'magit-apply)
-;;(require 'magit-repos)
-;;(require 'git-commit)
+(require 'magit-core)
+(require 'magit-diff)
+(require 'magit-log)
+(require 'magit-wip)
+(require 'magit-apply)
+(require 'magit-repos)
+(require 'git-commit)
 
 (require 'epa) ;used in magit-read-gpg-{secret,signing}-key
 (require 'format-spec)

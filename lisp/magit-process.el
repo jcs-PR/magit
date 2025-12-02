@@ -30,13 +30,13 @@
 
 ;;; Code:
 
-;;(require 'magit-base)
-;;(require 'magit-git)
-;;(require 'magit-mode)
+(require 'magit-base)
+(require 'magit-git)
+(require 'magit-mode)
 
-;;(require 'ansi-color)
-;;(require 'auth-source)
-;;(require 'with-editor)
+(require 'ansi-color)
+(require 'auth-source)
+(require 'with-editor)
 
 (defvar messages-buffer-name)
 (defvar y-or-n-p-map)
@@ -111,7 +111,42 @@ displays the text of `magit-process-error-summary' instead."
   :type '(choice (const :tag "Use summary line" nil)
                  integer))
 
+(defcustom magit-credential-cache-daemon-socket
+  (seq-some (lambda (line)
+              (pcase-let ((`(,prog . ,args) (split-string line)))
+                (and prog
+                     (string-match-p
+                      "\\`\\(?:\\(?:/.*/\\)?git-credential-\\)?cache\\'" prog)
+                     (or (cadr (member "--socket" args))
+                         (expand-file-name "~/.git-credential-cache/socket")))))
+            ;; Note: `magit-process-file' is not yet defined when
+            ;; evaluating this form, so we use `process-lines'.
+            (ignore-errors
+              (let ((process-environment
+                     (append magit-git-environment process-environment)))
+                (process-lines magit-git-executable
+                               "config" "--get-all" "credential.helper"))))
+  "If non-nil, start a credential cache daemon using this socket.
 
+When using Git's cache credential helper in the normal way, Emacs
+sends a SIGHUP to the credential daemon after the git subprocess
+has exited, causing the daemon to also quit.  This can be avoided
+by starting the `git-credential-cache--daemon' process directly
+from Emacs.
+
+The function `magit-maybe-start-credential-cache-daemon' takes
+care of starting the daemon if necessary, using the value of this
+option as the socket.  If this option is nil, then it does not
+start any daemon.  Likewise if another daemon is already running,
+then it starts no new daemon.  This function has to be a member
+of the hook variable `magit-credential-hook' for this to work.
+If an error occurs while starting the daemon, most likely because
+the necessary executable is missing, then the function removes
+itself from the hook, to avoid further futile attempts."
+  :package-version '(magit . "2.3.0")
+  :group 'magit-process
+  :type '(choice (file  :tag "Socket")
+                 (const :tag "Don't start a cache daemon" nil)))
 
 (defcustom magit-process-yes-or-no-prompt-regexp
   (eval-when-compile

@@ -29,9 +29,9 @@
 
 ;;; Code:
 
-;;(require 'magit-core)
-;;(require 'magit-diff)
-;;(require 'magit-wip)
+(require 'magit-core)
+(require 'magit-diff)
+(require 'magit-wip)
 
 (require 'dired)
 (require 'transient) ; See #3732.
