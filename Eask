@@ -12,6 +12,8 @@
 
 (script "test" "echo \"Error: no test specified\" && exit 1")
 
+(exec-paths "lisp")
+
 (source 'gnu)
 (source 'melpa)
 
