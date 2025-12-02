@@ -33,5 +33,5 @@ jobs:
 
     - name: Run tests
       run: |
-        eask package
-        eask install --verbose 5
+        eask install-deps
+        eask load lisp/git-commit.el
