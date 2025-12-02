@@ -104,11 +104,11 @@
 ;;(require 'magit-mode)
 ;;(require 'magit-process)
 
-;;(require 'log-edit)
-;;(require 'ring)
-;;(require 'server)
-;;(require 'transient)
-;;(require 'with-editor)
+(require 'log-edit)
+(require 'ring)
+(require 'server)
+(require 'transient)
+(require 'with-editor)
 
 (defvar diff-default-read-only)
 (defvar flyspell-generic-check-word-predicate)

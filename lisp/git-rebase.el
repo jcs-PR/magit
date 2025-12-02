@@ -72,7 +72,7 @@
 
 ;;; Code:
 
-(require 'magit)
+;;(require 'magit)
 
 (require 'easymenu)
 (require 'server)
